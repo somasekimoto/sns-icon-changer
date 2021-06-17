@@ -9,7 +9,6 @@ class IconsController < ApplicationController
         @icons[object.data().key.split("/")[0]] = object.presigned_url(:get)
       end
     }
-    # render json: {icons: icons}
     render action: :index
   end
 
@@ -17,6 +16,9 @@ class IconsController < ApplicationController
     @s3_bucket.objects().each{|object|
       @s3_bucket.put_object(key: object.data().key, body: File.open(params[:icon]))
     }
+    obj = @s3_bucket.object('twitter/23laugh.jpeg')
+    file = obj.presigned_url(:get, expires_in: 60)
+    @twitter_client.update_profile_image(URI.open(file))
   end
 
 private
