@@ -1,0 +1,24 @@
+<h1>SNSアイコンチェンジャー</h1>
+<% @icons.each do |name, url| %>
+  <p><%= name %></p>
+  <img width="72px"src="<%= url %>">
+  <a href="<%= url %>">url<a>
+  <button click="#">change</button>
+<% end %>
+<div>
+
+
+
+
+<%= form_tag('/icon', multipart: true) do%>
+  <div class="field">
+    <%= label_tag :icon%>
+    <%= file_field_tag "icon"%>
+  </div>
+  <div class="field">
+    <%= submit_tag "submit"%>
+  </div>
+<% end %>
+
+
+</div>

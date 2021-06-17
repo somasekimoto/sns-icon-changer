@@ -2,8 +2,10 @@ source "https://rubygems.org"
 
 gem "jets", "~> 3.0.0"
 
+gem "aws-sdk"
 # Include jetpacker if you are building html pages
 gem "jetpacker"
+gem "twitter"
 
 gem "dynomite"
 
