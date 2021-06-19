@@ -5,7 +5,7 @@ class IconsController < ApplicationController
   def fetch
     @icons = {}
     @s3_bucket.objects().each{|object|
-      if object.data().key.match(/.+\.jpeg|\.jpg|\.png|\.gif/)
+      if is_image?(object)
         @icons[object.data().key.split("/")[0]] = object.presigned_url(:get)
       end
     }
@@ -14,11 +14,17 @@ class IconsController < ApplicationController
 
   def post
     @s3_bucket.objects().each{|object|
-      @s3_bucket.put_object(key: object.data().key, body: File.open(params[:icon]))
+      if is_image?(object)
+        @s3_bucket.put_object(key: object.data().key, body: File.open(params[:icon]))
+      end
     }
     obj = @s3_bucket.object('twitter/23laugh.jpeg')
     file = obj.presigned_url(:get, expires_in: 60)
     @twitter_client.update_profile_image(URI.open(file))
+  end
+
+  def is_image?(object)
+    return object.data().key.match(/.+\.jpeg|\.jpg|\.png|\.gif/)
   end
 
 private
