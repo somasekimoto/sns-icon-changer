@@ -14,12 +14,25 @@ class IconsController < ApplicationController
 
   def post
     @s3_bucket.objects().each{|object|
-      if is_image?(object)
-        @s3_bucket.put_object(key: object.data().key, body: File.open(params[:icon]))
+      key = object.data().key
+      dir = object.data().key.split("/")[0]
+      if is_image?(object) && params[:sns][dir]
+        @s3_bucket.put_object(key: key, body: File.open(params[:icon]))
+        if dir != 'portfolio'
+          send('set_' + dir + '_icon', object)
+        end
       end
     }
-    obj = @s3_bucket.object('twitter/23laugh.jpeg')
-    file = obj.presigned_url(:get, expires_in: 60)
+    render action: :posted
+  end
+
+  def set_discord_icon(image)
+    puts 'not created yet'
+  end
+
+  def set_twitter_icon(object)
+    require 'open-uri'
+    file = object.presigned_url(:get, expires_in: 60)
     @twitter_client.update_profile_image(URI.open(file))
   end
 

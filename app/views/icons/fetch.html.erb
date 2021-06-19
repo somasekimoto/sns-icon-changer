@@ -1,24 +1,26 @@
-<h1>SNSアイコンチェンジャー</h1>
-<% @icons.each do |name, url| %>
-  <p><%= name %></p>
-  <img width="72px"src="<%= url %>">
-  <a href="<%= url %>">url<a>
-  <button click="#">change</button>
-<% end %>
-<div>
+<h1>SNS ICON CHANGER</h1>
+<div style="display: flex; justify-content: center;">
+  <%= form_tag('/icon', multipart: true) do%>
+    <ul style="list-style: none; display: flex; justify-content: center;">
+      <% @icons.each do |name, url| %>
+        <li style="margin: auto 25px;">
+          <img width="72px"src="<%= url %>">
+          <div>
+            <%= check_box_tag 'sns[' + name +'][]', true, true, {} %>
+            <%= label_tag 'sns[' + name +'][]', name %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
 
-
-
-
-<%= form_tag('/icon', multipart: true) do%>
-  <div class="field">
-    <%= label_tag :icon%>
-    <%= file_field_tag "icon"%>
-  </div>
-  <div class="field">
-    <%= submit_tag "submit"%>
-  </div>
-<% end %>
+    <div style="display: flex; justify-content: center; margin: 15px auto;">
+      <%= file_field_tag "icon"%>
+    </div>
+    <div style="display: flex; justify-content: center; margin: 15px auto;">
+      <%= submit_tag "submit"%>
+    </div>
+  <% end %>
+</div>
 
 
 </div>
