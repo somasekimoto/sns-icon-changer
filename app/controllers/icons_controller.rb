@@ -15,25 +15,37 @@ class IconsController < ApplicationController
   def post
     @s3_bucket.objects().each{|object|
       key = object.data().key
-      dir = object.data().key.split("/")[0]
-      if is_image?(object) && params[:sns][dir]
+      dir_name = object.data().key.split("/")[0]
+      status = {}
+      if is_image?(object) && params[:sns][dir_name]
         @s3_bucket.put_object(key: key, body: File.open(params[:icon]))
-        if dir != 'portfolio'
-          send('set_' + dir + '_icon', object)
+        if dir_name != 'portfolio'
+          presigned_url = object.presigned_url(:get, expires_in: 60)
+          status[dir_name] = send('set_' + dir_name + '_icon', presigned_url)
         end
       end
     }
-    render action: :posted
+    render action: :posted, status: status
+    # redirect_to root_path
   end
 
-  def set_discord_icon(image)
-    puts 'not created yet'
+  def set_discord_icon(url)
+    encodedImg = 'data:image/png;base64,' + Base64.strict_encode64(URI.open(url).read)
+    begin
+      Discordrb::API::User.update_profile(ENV['DISCORD_TOKEN'], ENV['DISCORD_EMAIL_ADDRESS'], ENV['DISCORD_PASSWORD'], ENV['DISCORD_USERNAME'], encodedImg)
+      return "OK"
+    rescue => exception
+      return exception
+    end
   end
 
-  def set_twitter_icon(object)
-    require 'open-uri'
-    file = object.presigned_url(:get, expires_in: 60)
-    @twitter_client.update_profile_image(URI.open(file))
+  def set_twitter_icon(url)
+    begin
+      @twitter_client.update_profile_image(URI.open(url))
+      return "OK"
+    rescue => exception
+      return exception
+    end
   end
 
   def is_image?(object)
