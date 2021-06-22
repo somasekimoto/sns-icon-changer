@@ -7,6 +7,7 @@ gem "aws-sdk"
 gem "jetpacker"
 gem "twitter"
 gem 'discordrb', '~> 3.4'
+gem 'open-uri'
 
 gem "dynomite"
 
