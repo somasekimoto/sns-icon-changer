@@ -5,20 +5,55 @@ class IconsController < ApplicationController
   def fetch
     @icons = {}
     @s3_bucket.objects().each{|object|
-      if object.data().key.match(/.+\.jpeg|\.jpg|\.png|\.gif/)
+      if is_image?(object)
         @icons[object.data().key.split("/")[0]] = object.presigned_url(:get)
       end
     }
     render action: :index
   end
 
+  def posted
+    render action: :posted
+  end
+
   def post
+    @status = {}
     @s3_bucket.objects().each{|object|
-      @s3_bucket.put_object(key: object.data().key, body: File.open(params[:icon]))
+      key = object.data().key
+      dir_name = object.data().key.split("/")[0]
+      if is_image?(object) && params[:sns][dir_name]
+        @s3_bucket.put_object(key: key, body: File.open(params[:icon]))
+        if dir_name != 'portfolio'
+          presigned_url = object.presigned_url(:get, expires_in: 60)
+          @status[dir_name] = send('set_' + dir_name + '_icon', presigned_url)
+        end
+      end
     }
-    obj = @s3_bucket.object('twitter/23laugh.jpeg')
-    file = obj.presigned_url(:get, expires_in: 60)
-    @twitter_client.update_profile_image(URI.open(file))
+    puts @status
+    render 'icons/posted'
+  end
+
+  def set_discord_icon(url)
+    encodedImg = 'data:image/png;base64,' + Base64.strict_encode64(URI.open(url).read)
+    begin
+      Discordrb::API::User.update_profile(ENV['DISCORD_TOKEN'], ENV['DISCORD_EMAIL_ADDRESS'], ENV['DISCORD_PASSWORD'], ENV['DISCORD_USERNAME'], encodedImg)
+      return "OK"
+    rescue => exception
+      return exception.message
+    end
+  end
+
+  def set_twitter_icon(url)
+    begin
+      @twitter_client.update_profile_image(URI.open(url))
+      return "OK"
+    rescue => exception
+      return exception.message
+    end
+  end
+
+  def is_image?(object)
+    return object.data().key.match(/.+\.jpeg|\.jpg|\.png|\.gif/)
   end
 
 private

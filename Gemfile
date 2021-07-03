@@ -6,6 +6,8 @@ gem "aws-sdk"
 # Include jetpacker if you are building html pages
 gem "jetpacker"
 gem "twitter"
+gem 'discordrb', '~> 3.4'
+gem 'open-uri'
 
 gem "dynomite"
 

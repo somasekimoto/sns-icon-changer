@@ -1,7 +1,6 @@
 Jets.application.routes.draw do
-  root "jets/public#show"
-
-  get '/icons', to: 'icons#fetch'
+  root "icons#fetch"
+  get '/posted', to: 'icons#posted'
   post '/icon', to: 'icons#post'
 
   # The jets/public#show controller can serve static utf8 content out of the public folder.
