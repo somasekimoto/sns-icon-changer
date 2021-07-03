@@ -12,21 +12,25 @@ class IconsController < ApplicationController
     render action: :index
   end
 
+  def posted
+    render action: :posted
+  end
+
   def post
+    @status = {}
     @s3_bucket.objects().each{|object|
       key = object.data().key
       dir_name = object.data().key.split("/")[0]
-      status = {}
       if is_image?(object) && params[:sns][dir_name]
         @s3_bucket.put_object(key: key, body: File.open(params[:icon]))
         if dir_name != 'portfolio'
           presigned_url = object.presigned_url(:get, expires_in: 60)
-          status[dir_name] = send('set_' + dir_name + '_icon', presigned_url)
+          @status[dir_name] = send('set_' + dir_name + '_icon', presigned_url)
         end
       end
     }
-    render action: :posted, status: status
-    # redirect_to root_path
+    puts @status
+    render 'icons/posted'
   end
 
   def set_discord_icon(url)
@@ -35,7 +39,7 @@ class IconsController < ApplicationController
       Discordrb::API::User.update_profile(ENV['DISCORD_TOKEN'], ENV['DISCORD_EMAIL_ADDRESS'], ENV['DISCORD_PASSWORD'], ENV['DISCORD_USERNAME'], encodedImg)
       return "OK"
     rescue => exception
-      return exception
+      return exception.message
     end
   end
 
@@ -44,7 +48,7 @@ class IconsController < ApplicationController
       @twitter_client.update_profile_image(URI.open(url))
       return "OK"
     rescue => exception
-      return exception
+      return exception.message
     end
   end
 

@@ -1,3 +1,9 @@
+<h1>Result</h1>
 <div>
-<p>Success!!</p>
+<% if defined? @status%>
+  <% @status.each do |k,v| %>
+    <p><%= k + ': ' + v %></p>
+  <% end %>
+<% end %>
 </div>
+<%= link_to "Top", '/' %>
